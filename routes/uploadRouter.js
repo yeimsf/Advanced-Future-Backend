@@ -42,11 +42,10 @@ uploadRouter.route('/')
     res.statusCode = 403;
     res.end('DELETE operation not supported on /imageUpload');
 })
-.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin, upload.single('imageFile'), (req,res) =>{
+.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin, upload.array('imageFiles', 10), (req,res) =>{
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.json(req.file);
+    res.json(req.files);
 });
-
 
 module.exports = uploadRouter;
