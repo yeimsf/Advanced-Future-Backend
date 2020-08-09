@@ -11,16 +11,10 @@ var config = require('./config');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var dishRouter = require('./routes/dishRouter');
-var promoRouter = require('./routes/promoRouter');
-var leaderRouter = require('./routes/leaderRouter');
-var uploadRouter = require('./routes/uploadRouter');
-var favoriteRouter = require('./routes/favoriteRouter');
+var appartRouter = require('./routes/appartRouter');
 const mongoose = require('mongoose');
 
-const Dishes = require('./models/dishes');
-const Leaders = require('./models/leaders');
-const Promotions = require('./models/promotions');
+const Appartments = require('./models/appartments');
 
 const url = config.mongoUrl;
 
@@ -38,7 +32,7 @@ app.all('*', (req,res,next) => {
   }
   else
   {
-    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);  
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
   }
 });
 
@@ -61,11 +55,7 @@ app.use('/users', users);
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use('/dishes', dishRouter);
-app.use('/promotions', promoRouter);
-app.use('/leaders', leaderRouter);
-app.use('/imageUpload', uploadRouter);
-app.use('/favorites', favoriteRouter);
+app.use('/appartments', appartRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

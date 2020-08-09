@@ -4,6 +4,27 @@ const mongoose = require('mongoose');
 const authenticate = require('../authenticate');
 const Appartments = require('../models/appartments');
 const cors = require('./cors');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/images');
+    },
+
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+});
+
+const imageFileFilter = (req, file, cb) => {
+    if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+        return cb(new Error('You can upload only image files!'), false);
+    }
+    cb(null, true);
+};
+
+const upload = multer({ storage: storage, fileFilter: imageFileFilter});
+
 const appartRouter = express.Router();
 
 appartRouter.use(bodyParser.json());
@@ -31,9 +52,15 @@ appartRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin, (req,res,next) =>{
+.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,upload.array('imageFile'), (req,res,next) =>{
     Appartments.create(req.body)
     .then((appartment) => {
+        var files = [].concat(req.files);
+        for(var x = 0; x < files.length; x++){
+          file = files[x];
+          appartment.image.push({"image": file.path});
+        }
+        appartment.save();
         console.log('Appartment Created ', appartment);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -52,7 +79,6 @@ appartRouter.route('/:appartmentId')
 })
 .get(cors.cors,(req,res,next) =>{
     Appartments.findById(req.params.appartmentId)
-    .populate('comments.author')
     .then((appartment) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -73,11 +99,20 @@ appartRouter.route('/:appartmentId')
     res.statusCode = 403;
     res.end('POST operation not supported on /appartments/'+req.params.appartmentId);
 })
-.put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) =>{
+.put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin, upload.array('imageFile'), (req,res,next) =>{
     Appartments.findByIdAndUpdate(req.params.appartmentId, {
-        $set: req.body
+        $set: req.body,
+        $unset: {
+          "image": ""
+        }
     }, { new: true })
     .then((appartment) => {
+        var files = [].concat(req.files);
+        for(var x = 0; x < files.length; x++){
+          file = files[x];
+          appartment.image.push({"image": file.path});
+        }
+        appartment.save();
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(appartment);
