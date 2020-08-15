@@ -52,6 +52,7 @@ app.use('/', index);
 app.use('/users', users);
 
 
+app.use(express.static(path.join(__dirname)));
 app.use(express.static(path.join(__dirname, 'public')));
 
 

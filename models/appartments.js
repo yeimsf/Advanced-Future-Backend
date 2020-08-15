@@ -11,10 +11,9 @@ var imageSchema = new Schema({
 })
 
 var appartSchema = new Schema({
-    name: {
+    areaName: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     description: {
         type: String,
@@ -29,11 +28,7 @@ var appartSchema = new Schema({
         type: Currency,
         required: true,
         min: 0
-    },
-    featured: {
-        type: Boolean,
-        default: false
-    },
+    }
 }, {
     timestamps: true
 });
