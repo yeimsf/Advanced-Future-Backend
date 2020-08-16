@@ -56,12 +56,12 @@ appartRouter.route('/')
 .post(cors.corsWithOptions,upload.array('imageFile'), (req,res,next) =>{
     Appartments.create(req.body)
     .then((appartment) => {
-        // var files = [].concat(req.files);
-        // for(var i = 0; i < files.length; x++){
-        //   file = files[i];
-        //   appartment.image.push({"image": file.path});
-        // }
-        // appartment.save();
+        var files = [].concat(req.files);
+        for(var i = 0; i < files.length; i++){
+          file = files[i];
+          appartment.image.push({"image": file.path});
+        }
+        appartment.save();
         console.log('Appartment Created ', appartment);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -99,7 +99,7 @@ appartRouter.route('/:appartmentId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) =>{
+.delete(cors.corsWithOptions,(req,res,next) =>{
     Appartments.findByIdAndRemove(req.params.appartmentId)
     .then((resp) => {
         res.statusCode = 200;
