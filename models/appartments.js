@@ -13,20 +13,16 @@ var imageSchema = new Schema({
 var appartSchema = new Schema({
     areaName: {
         type: String,
-        required: true
     },
     description: {
         type: String,
-        required: true
     },
     shortDescription: {
         type: String,
-        required: true
     },
     image: [imageSchema],
     price: {
         type: Currency,
-        required: true,
         min: 0
     }
 }, {

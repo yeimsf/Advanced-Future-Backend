@@ -5,25 +5,47 @@ const authenticate = require('../authenticate');
 const Appartments = require('../models/appartments');
 const cors = require('./cors');
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'public/images');
+//     },
+//
+//     filename: (req, file, cb) => {
+//         cb(null, file.originalname)
+//     }
+// });
+//
+// const imageFileFilter = (req, file, cb) => {
+//     if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+//         return cb(new Error('You can upload only image files!'), false);
+//     }
+//     cb(null, true);
+// };
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/images');
     },
-
     filename: (req, file, cb) => {
-        cb(null, file.originalname)
+        const fileName = file.originalname.toLowerCase().split(' ').join('-');
+        cb(null, uuidv4() + '-' + fileName)
     }
 });
 
-const imageFileFilter = (req, file, cb) => {
-    if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-        return cb(new Error('You can upload only image files!'), false);
+var upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+            cb(null, true);
+        } else {
+            cb(null, false);
+            return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+        }
     }
-    cb(null, true);
-};
+});
 
-const upload = multer({ storage: storage, fileFilter: imageFileFilter});
+//const upload = multer({ storage: storage, fileFilter: imageFileFilter});
 
 const appartRouter = express.Router();
 
@@ -53,7 +75,7 @@ appartRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(cors.corsWithOptions,upload.array('imageFile'), (req,res,next) =>{
+.post(cors.corsWithOptions,upload.array('image'), (req,res,next) =>{
     Appartments.create(req.body)
     .then((appartment) => {
         var files = [].concat(req.files);
@@ -62,13 +84,39 @@ appartRouter.route('/')
           appartment.image.push({"image": file.path});
         }
         appartment.save();
-        console.log('Appartment Created ', appartment);
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader("Content-Type", "application/json");
         res.json(appartment);
     }, (err) => next(err))
     .catch((err) => next(err));
 })
+// .post(upload.array('image', 7), (req, res, next) => {
+//     const appartment = new Appartment();
+//     appartment = {
+//         _id: new mongoose.Types.ObjectId(),
+//
+//     };
+//     var files = [].concat(req.files);
+//
+//     for(var i = 0; i < files.length; i++){
+//       file = files[i];
+//       appartment.image.push({"image": file.path});
+//     }
+//     appartment.save().then(result => {
+//         res.status(201).json({
+//             message: "Done upload!",
+//             appartmentCreated: {
+//                 _id: result._id,
+//                 image: result.image,
+//             }
+//         })
+//     }).catch(err => {
+//         console.log(err),
+//             res.status(500).json({
+//                 error: err
+//             });
+//     })
+// })
 .put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) =>{
     res.statusCode = 403;
     res.end('PUT operation not supported on /appartments');
@@ -86,6 +134,7 @@ appartRouter.route('/')
 //     res.sendFile(path.join(__dirname + ims));
 //   })
 // });
+
 appartRouter.route('/:appartmentId')
 .options(cors.corsWithOptions, (req,res) => {
     res.sendStatus(200);
