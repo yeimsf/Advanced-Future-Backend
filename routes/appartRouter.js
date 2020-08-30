@@ -50,7 +50,7 @@ var upload = multer({
 const appartRouter = express.Router();
 
 appartRouter.use(bodyParser.json());
-
+appartRouter.use(bodyParser.urlencoded({extended: true}));
 
 appartRouter.route('/')
 .options(cors.corsWithOptions, (req,res) => {
@@ -161,13 +161,10 @@ appartRouter.route('/:appartmentId')
     res.statusCode = 403;
     res.end('POST operation not supported on /appartments/'+req.params.appartmentId);
 })
-.put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin, upload.array('imageFile'), (req,res,next) =>{
+.put(cors.corsWithOptions, upload.array('imageFile'), (req,res,next) =>{
     Appartments.findByIdAndUpdate(req.params.appartmentId, {
         $set: req.body,
-        $unset: {
-          "image": ""
-        }
-    }, { new: true })
+    })
     .then((appartment) => {
         var files = [].concat(req.files);
         for(var x = 0; x < files.length; x++){
