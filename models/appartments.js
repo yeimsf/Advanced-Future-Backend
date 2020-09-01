@@ -17,13 +17,21 @@ var appartSchema = new Schema({
     description: {
         type: String,
     },
-    shortDescription: {
+    bathrooms: {
+        type: String,
+    },
+    bedrooms: {
+        type: String,
+    },
+    balconys: {
+        type: String,
+    },
+    kitchens: {
         type: String,
     },
     image: [imageSchema],
     price: {
-        type: Currency,
-        min: 0
+        type: String,
     }
 }, {
     timestamps: true
