@@ -8,7 +8,7 @@ var FileStore = require('session-file-store')(session);
 var passport = require('passport');
 var authenticate = require('./authenticate');
 var config = require('./config');
-
+var cors = require('cors');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var appartRouter = require('./routes/appartRouter');
@@ -25,16 +25,6 @@ connect.then((db) => {
 }, (err) => { console.log(err); });
 
 var app = express();
-
-app.all('*', (req,res,next) => {
-  if(req.secure) {
-    return next();
-  }
-  else
-  {
-    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
-  }
-});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

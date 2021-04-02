@@ -4,14 +4,21 @@ var User = require('../models/user');
 var passport = require('passport');
 var authenticate = require('../authenticate');
 var cors = require('./cors');
+var config = require('./configUser');
+var configGuest = require('../config');
+const mongoose = require('mongoose');
+
+const url = config.mongoUrl;
+const urlGuest = configGuest.mongoUrl;
+
 const { JsonWebTokenError } = require('jsonwebtoken');
 
 var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.options('*', cors.corsWithOptions, (req,res) => { res.sendStatus(200); });
-router.post('/signup',cors.corsWithOptions, (req, res, next) => {
+router.options('*', (req,res) => { res.sendStatus(200); });
+router.post('/signup', (req, res, next) => {
   User.register(new User({username: req.body.username}),
     req.body.password, (err, user) => {
     if(err) {
@@ -41,7 +48,7 @@ router.post('/signup',cors.corsWithOptions, (req, res, next) => {
     }
   });
 });
-router.post('/login',cors.corsWithOptions, (req, res, next) => {
+router.post('/login', (req, res, next) => {
 
   passport.authenticate('local', (err, user, info) => {
     if(err)
@@ -59,6 +66,11 @@ router.post('/login',cors.corsWithOptions, (req, res, next) => {
       }
 
       var token = authenticate.getToken({_id: req.user._id});
+      mongoose.connection.close();
+      const connect = mongoose.connect(url);
+      connect.then((db) => {
+          console.log('Connected To Admin Correctly');
+      }, (err) => { console.log(err); });
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.json({success: true, status: 'Login Successful!', token: token});
@@ -68,7 +80,11 @@ router.post('/login',cors.corsWithOptions, (req, res, next) => {
 router.get('/logout',cors.corsWithOptions, (req, res,next) => {
   req.logout();
   res.statusCode = 200;
-  res.redirect('/');
+  mongoose.connection.close();
+  const connect = mongoose.connect(urlGuest);
+  connect.then((db) => {
+  	console.log('Connected Correctly To Server');
+  }, (err) => { console.log(err); });
   // if (req.session) {
   //   req.session.destroy();
   //   res.clearCookie('session-id');

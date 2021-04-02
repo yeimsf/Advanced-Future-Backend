@@ -9,12 +9,14 @@ var debug = require('debug')('confusionserver:server');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '3443');
-app.set('secPort', port+443);
+app.set('port', port);
+//app.set('secPort', port+443);
 
 /**
  * Create HTTP server.
@@ -36,14 +38,14 @@ var options = {
   cert: fs.readFileSync(__dirname+'/certificate.pem')
 };
 
-var secureServer = https.createServer(options, app);
+//var secureServer = https.createServer(options, app);
 
-secureServer.listen(app.get('secPort'), () => {
-  console.log('Secure Server Listening On Port ', app.get('secPort'));
-});
+//secureServer.listen(app.get('secPort'), () => {
+// console.log('Secure Server Listening On Port ', app.get('secPort'));
+//});
 
-secureServer.on('error', onError);
-secureServer.on('listening', onListening);
+//secureServer.on('error', onError);
+//secureServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
